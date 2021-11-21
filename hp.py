@@ -1,10 +1,11 @@
 #!./env/bin/python3
 
 import argparse
-from sys import stdin
+from sys import stdin, stderr
 from scipy.optimize import curve_fit
 from scipy.integrate import ode
 from scipy.interpolate import interp1d
+from numpy import inf as ninf
 from numpy import ndarray, array
 from functools import reduce
 
@@ -41,16 +42,16 @@ def get_mode(args):
     try:
         if mode is None:
             # TODO: verbose flag
-            print(f"mode defaults to {default_mode}")
+            print(f"mode defaults to {default_mode}", file=stderr)
             return default_mode
         while not ( "temp" == mode or "pow" == mode ):
             mode = input(f"specified mode is \"{mode}\", which is neither \"temp\" nor \"pow\"\n"
                           "type one of those and press Enter\n")
     except EOFError:
-        print("\ncouldn't get mode --- exiting...")
+        print("\ncouldn't get mode --- exiting...", file=stderr)
         exit(1)
     except KeyboardInterrupt:
-        print("\nexiting...")
+        print("\nexiting...", file=stderr)
         exit(0)
     return mode
 
@@ -65,17 +66,17 @@ def get_known_signal():
             if "" == stripped:
                 break
             if resp_kw == stripped:
-                print(f"separate {sig_kw} and {resp_kw} sections with empty line")
-                print("exiting...")
+                print(f"separate {sig_kw} and {resp_kw} sections with empty line", file=stderr)
+                print("exiting...", file=stderr)
                 exit(2)
             try:
                 sig_t, sig = map(float, stripped.split(val_delim))
                 known_signal[sig_t] = sig
             except:
-                print(f"discarded \"{stripped}\"")
+                print(f"discarded \"{stripped}\"", file=stderr)
         return known_signal
     except EOFError:
-        print("exiting on unexpected end of file...")
+        print("exiting on unexpected end of file...", file=stderr)
         exit(3)
     
 # def floater(string):
@@ -101,13 +102,13 @@ def get_known_response(mode):
                         raise IOError("known signal time not specified")
                     known_response[time] = (body_temp, heater_temp)
                 else:
-                    print(f"unexpected mode \"{mode}\", probably bug...")
-                    print("exiting...")
+                    print(f"unexpected mode \"{mode}\", probably bug...", file=stderr)
+                    print("exiting...", file=stderr)
                     exit(4)
             except:
-                print(f"discarded \"{stripped}\"")
+                print(f"discarded \"{stripped}\"", file=stderr)
     except EOFError:
-        print("exiting on unexpected end of file")
+        print("exiting on unexpected end of file", file=stderr)
         exit(5)
     return known_response
 
@@ -115,9 +116,10 @@ def get_known_response(mode):
 def emit_predicted_response(known_signal, known_response, mode):
     known_fn = PseudoFunction(known_signal)
     unknown_fn = PseudoFunction(known_response)
-    # print(f"known:\n{known_fn.table}", end='')
-    # print(f"unknown:\n{unknown_fn.table}", end='')
+    # print(f"known:\n{known_fn.table}", end='', file=stderr)
+    # print(f"unknown:\n{unknown_fn.table}", end='', file=stderr)
     predictor = Predictor(known_fn, unknown_fn, mode)
+    print(predictor.params, file=stderr)
     predictor.emit_all()
 
 
@@ -127,9 +129,12 @@ class PseudoFunction:
         # WARNING: out of bounds not handled
         self.lboundary = self.table.keys[0]
         self.rboundary = self.table.keys[-1]
+        # print(f"constructing pf from\n{self.table}", file=stderr)
         self.interpolator = interp1d(self.table.keys, self.table.vals,
                                      fill_value="extrapolate", bounds_error=False,
-                                     assume_sorted=True)
+                                     assume_sorted=True,
+                                     axis=0,
+                                     )
 
     def __call__(self, arg):
         # WARNING: return type is array, not float
@@ -190,6 +195,8 @@ class Predictor:
         self.kf = known_fn
         self.uf = unknown_fn
         self.mode = mode
+        self.times = known_fn.table.submerged_keys(unknown_fn.table)
+        t0 = self.times[0]
         if "temp" == mode:
             def _rhs(time, body_temp, heater_temp, kappa, kappa0):
                 # heater_temp = self.kf(time)
@@ -197,24 +204,27 @@ class Predictor:
                        kappa0*(outside_temp - body_temp)
             def _jac(time, body_temp, heater_temp, kappa, kappa0):
                 return -kappa - kappa0
+            bounds = (array([self.uf(t0)*0.9, 0, 0]), 
+                      array([self.uf(t0)*1.1, ninf, ninf]),
+                      )
         elif "pow" == mode:
             pass
         else:
-            print(f"unrecognized mode \"{mode}\", probably bug, exiting...")
+            print(f"unrecognized mode \"{mode}\", probably bug, exiting...", file=stderr)
             exit(6)
         def rhs(t, x, *params):
             # print("rhs call for at", t, "for", x, "with", *params)
             return _rhs(t, x, self.kf(t), *params)
         def jac(t, x, *params):
             return _jac(t, x, self.kf(t), *params)
-        self.times = known_fn.table.submerged_keys(unknown_fn.table)
-        t0 = self.times[0]
         # print(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
-        self.integrator = Integrator(rhs, jac, known_fn(t0), self.times)
+        self.integrator = Integrator(rhs, jac, self.times, unknown_fn(t0))
         guess = self.generate_guess()
         self.params, _ = curve_fit(self.integrator,
                                    unknown_fn.table.keys, unknown_fn.table.vals,
-                                   guess)
+                                   guess,
+                                   bounds=bounds,
+                                   )
         self.params = tuple(self.params)
 
     def generate_guess(self) -> tuple:
@@ -233,7 +243,7 @@ class Predictor:
                 dt = self.uf.table.keys[i+1] - self.uf.table.keys[i]
                 ks.append((bt_i01 - bt_i00) / (dt * (ht_i05 - bt_i05)))
             k = reduce(lambda l, r: l + r, ks, 0.0) / len(ks)
-            return (k, k0)
+            return (self.uf(self.times[0]), k, k0)
         else: # "pow"
             pass
 
@@ -260,7 +270,7 @@ class Predictor:
 
 
 class Integrator:
-    def __init__(self, rhs, jac, ic, times):
+    def __init__(self, rhs, jac, times, ic=None):
         self.rhs = rhs
         self.jac = jac
         self.ic = ic
@@ -274,9 +284,10 @@ class Integrator:
         return self.pf(arg)
 
     def set_params(self, *params):
-        if self.params != params:
+        if self.params != params[1:] or self.ic != params[0]:
             # print(f"resetting integrator parameters to {params}")
-            self.params = params
+            self.ic = params[0]
+            self.params = params[1:]
             self.integrate()
 
     def integrate(self):
@@ -288,7 +299,7 @@ class Integrator:
         t0, tend = self.times[0], self.times[-1]
         time2val[t0] = self.ic
         solver.set_initial_value(self.ic, t0)
-        # print("setting solver parameters to", *self.params)
+        # print("setting solver parameters to", *self.params, file=stderr)
         # solver.set_f_params(*self.params).set_jac_params(*self.params)
         for time in self.times[1::]:
             if solver.successful():
