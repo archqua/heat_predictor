@@ -1,4 +1,4 @@
-#!./env/bin/python3
+#!/bin/env python
 
 import argparse
 from sys import stdin, stderr
@@ -13,8 +13,10 @@ from functools import reduce
 default_mode = "temp"
 sig_kw = "known"
 resp_kw = "unknown"
-val_delim = ' '
+val_delim = ','
 outside_temp = 20 # Celcius
+
+valid_modes = {"temp", "temp_offset", "2isol"}
 
 
 def main():
@@ -33,7 +35,7 @@ parser = argparse.ArgumentParser(
             description="heat prediction script to calibrate faster"
          )
 parser.add_argument("mode", type = str, nargs = '?',
-                    help = "\"temp\" or \"pow\" to "
+                    help = "\"temp\" or \"temp_offset\" or \"2isol\" to "
                            "predict by known heater temperatures "
                            "or by known heater power")
 
@@ -44,8 +46,8 @@ def get_mode(args):
             # TODO: verbose flag
             print(f"mode defaults to {default_mode}", file=stderr)
             return default_mode
-        while not ( "temp" == mode or "pow" == mode ):
-            mode = input(f"specified mode is \"{mode}\", which is neither \"temp\" nor \"pow\"\n"
+        while not ( mode in valid_modes ):
+            mode = input(f"specified mode is \"{mode}\", which is neither of {valid_modes}\n"
                           "type one of those and press Enter\n")
     except EOFError:
         print("\ncouldn't get mode --- exiting...", file=stderr)
@@ -93,7 +95,7 @@ def get_known_response(mode):
         for line in stdin:
             stripped = line.rstrip()
             try:
-                if "temp" == mode:
+                if mode in {"temp", "temp_offset", "2isol"}:
                     time, body_temp = map(float, stripped.split(val_delim))
                     known_response[time] = body_temp
                 elif "pow" == mode:
@@ -118,7 +120,11 @@ def emit_predicted_response(known_signal, known_response, mode):
     unknown_fn = PseudoFunction(known_response)
     # print(f"known:\n{known_fn.table}", end='', file=stderr)
     # print(f"unknown:\n{unknown_fn.table}", end='', file=stderr)
-    predictor = Predictor(known_fn, unknown_fn, mode)
+    predictor = Predictors.get_predictor(known_fn, unknown_fn, mode)
+    if predictor is None:
+        print(f"unknown mode {mode}", file=stderr)
+        print("exiting...", file=stderr)
+        exit(6)
     print(predictor.params, file=stderr)
     predictor.emit_all()
 
@@ -190,85 +196,6 @@ class Table:
         return res
 
 
-class Predictor:
-    def __init__(self, known_fn: PseudoFunction, unknown_fn: PseudoFunction, mode):
-        self.kf = known_fn
-        self.uf = unknown_fn
-        self.mode = mode
-        self.times = known_fn.table.submerged_keys(unknown_fn.table)
-        t0 = self.times[0]
-        if "temp" == mode:
-            def _rhs(time, body_temp, heater_temp, kappa, kappa0):
-                # heater_temp = self.kf(time)
-                return kappa*(heater_temp - body_temp) + \
-                       kappa0*(outside_temp - body_temp)
-            def _jac(time, body_temp, heater_temp, kappa, kappa0):
-                return -kappa - kappa0
-            bounds = (array([self.uf(t0)*0.9, 0, 0]), 
-                      array([self.uf(t0)*1.1, ninf, ninf]),
-                      )
-        elif "pow" == mode:
-            pass
-        else:
-            print(f"unrecognized mode \"{mode}\", probably bug, exiting...", file=stderr)
-            exit(6)
-        def rhs(t, x, *params):
-            # print("rhs call for at", t, "for", x, "with", *params)
-            return _rhs(t, x, self.kf(t), *params)
-        def jac(t, x, *params):
-            return _jac(t, x, self.kf(t), *params)
-        # print(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
-        self.integrator = Integrator(rhs, jac, self.times, unknown_fn(t0))
-        guess = self.generate_guess()
-        self.params, _ = curve_fit(self.integrator,
-                                   unknown_fn.table.keys, unknown_fn.table.vals,
-                                   guess,
-                                   bounds=bounds,
-                                   )
-        self.params = tuple(self.params)
-
-    def generate_guess(self) -> tuple:
-        if "temp" == self.mode:
-            k0 = 0
-            ks: list[float] = []
-            for i in range(min(10, len(self.uf.table.keys)-1)):
-                # body temperatures
-                bt_i00 = self.uf.table.vals[i]
-                bt_i01 = self.uf.table.vals[i+1]
-                bt_i05 = 0.5 * (bt_i00 + bt_i01)
-                # heater temperatures
-                ht_i00 = self.kf(bt_i00)
-                ht_i01 = self.kf(bt_i01)
-                ht_i05 = 0.5 * (ht_i00 + ht_i01)
-                dt = self.uf.table.keys[i+1] - self.uf.table.keys[i]
-                ks.append((bt_i01 - bt_i00) / (dt * (ht_i05 - bt_i05)))
-            k = reduce(lambda l, r: l + r, ks, 0.0) / len(ks)
-            return (self.uf(self.times[0]), k, k0)
-        else: # "pow"
-            pass
-
-    def prepare_to_emit(self, *params) -> tuple[ndarray, ndarray]:
-        ts: list[float] = []
-        vals: list[ndarray] = []
-        # print(f"preparing to emit for times {self.times}")
-        for t in self.times:
-            ts.append(t)
-            vals.append(self.integrator(t, *params))
-        return (array(ts), array(vals))
-
-    def emit_all(self):
-        ts, vals = self.prepare_to_emit(*self.params)
-        for i in range(len(ts)):
-            v = vals[i]
-            try:
-                v[0]
-            except IndexError:
-                v = [v]
-            # print(f"printing {ts[i]} and {vals[i]}")
-            print(ts[i], *tuple(v))
-
-
-
 class Integrator:
     def __init__(self, rhs, jac, times, ic=None):
         self.rhs = rhs
@@ -307,6 +234,348 @@ class Integrator:
             else:
                 break
         self.pf = PseudoFunction(time2val)
+
+
+class IPredictor:
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(f"AbstractPredictor: __init__({args}, {kwargs})")
+
+    def emit_all(self):
+        raise NotImplementedError("AbstractPredictor: emit_all()")
+
+    def connect(self, successor):
+        self.successor = successor
+        return self
+
+    def set(self, *args, **kwargs):
+        raise NotImplementedError(f"AbstractPredictor: set({args, kwargs})")
+
+    def find(self, mode):
+        if self.mode == mode:
+            return self
+        else:
+            return self.successor
+
+
+class TempPredictor(IPredictor):
+    def __init__(self, known_fn: PseudoFunction = None,
+                       unknown_fn: PseudoFunction = None,
+                       successor = None):
+        self.mode = "temp"
+        self.successor = successor
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = None
+        self.integrator = None
+        self.params = None
+        self.is_set = False
+        if (self.kf is not None and self.uf is not None):
+            self.set(known_fn, unknown_fn)
+
+    def set(self, known_fn, unknown_fn):
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = known_fn.table.submerged_keys(unknown_fn.table)
+        t0 = self.times[0]
+        def _rhs(time, body_temp, heater_temp, kappa, kappa0):
+            # heater_temp = self.kf(time)
+            return kappa*(heater_temp - body_temp) + \
+                   kappa0*(outside_temp - body_temp)
+        def _jac(time, body_temp, heater_temp, kappa, kappa0):
+            return -kappa - kappa0
+        bounds = (array([self.uf(t0)*0.9, 0, 0]), 
+                  array([self.uf(t0)*1.1, ninf, ninf]),
+                  )
+        def rhs(t, x, *params):
+            # print("rhs call for at", t, "for", x, "with", *params)
+            return _rhs(t, x, self.kf(t), *params)
+        def jac(t, x, *params):
+            return _jac(t, x, self.kf(t), *params)
+        # print(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
+        self.integrator = Integrator(rhs, jac, self.times, unknown_fn(t0))
+        guess = self.generate_guess()
+        self.params, _ = curve_fit(self.integrator,
+                                   unknown_fn.table.keys, unknown_fn.table.vals,
+                                   guess,
+                                   bounds=bounds,
+                                   )
+        self.params = tuple(self.params)
+        return self
+
+    def generate_guess(self) -> tuple:
+        if self.kf is not None and self.uf is not None and self.times is not None:
+            k0 = 0
+            ks: list[float] = []
+            for i in range(min(10, len(self.uf.table.keys)-1)):
+                # body temperatures
+                bt_i00 = self.uf.table.vals[i]
+                bt_i01 = self.uf.table.vals[i+1]
+                bt_i05 = 0.5 * (bt_i00 + bt_i01)
+                # heater temperatures
+                ht_i00 = self.kf(bt_i00)
+                ht_i01 = self.kf(bt_i01)
+                ht_i05 = 0.5 * (ht_i00 + ht_i01)
+                dt = self.uf.table.keys[i+1] - self.uf.table.keys[i]
+                ks.append((bt_i01 - bt_i00) / (dt * (ht_i05 - bt_i05)))
+            k = reduce(lambda l, r: l + r, ks, 0.0) / len(ks)
+            return (self.uf(self.times[0]), k, k0)
+        else:
+            raise ValueError("TempPredictor: not set to generate guess")
+        
+
+    def prepare_to_emit(self, *params) -> tuple[ndarray, ndarray]:
+        if self.times is not None and self.integrator is not None:
+            ts: list[float] = []
+            vals: list[ndarray] = []
+            # print(f"preparing to emit for times {self.times}")
+            for t in self.times:
+                ts.append(t)
+                vals.append(self.integrator(t, *params))
+            return (array(ts), array(vals))
+        else:
+            raise ValueError("TempPredictor: not set to prepare to emit")
+
+    def emit_all(self):
+        ts, vals = self.prepare_to_emit(*self.params)
+        for i in range(len(ts)):
+            v = vals[i]
+            try:
+                v[0]
+            except IndexError:
+                v = [v]
+            # print(f"printing {ts[i]} and {vals[i]}")
+            print(ts[i], *tuple(v))
+
+
+class TempOffsetPredictor(IPredictor):
+    def __init__(self, known_fn: PseudoFunction = None, unknown_fn: PseudoFunction = None, successor = None):
+        self.mode = "temp_offset"
+        self.successor = successor
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = None
+        self.integrator = None
+        self.params = None
+        self.is_set = False
+        if (self.kf is not None and self.uf is not None):
+            self.set(known_fn, unknown_fn)
+
+    def set(self, known_fn, unknown_fn):
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = known_fn.table.submerged_keys(unknown_fn.table)
+        t0 = self.times[0]
+        def _rhs(time, body_temp, heater_temp, kappa, kappa0, toffset):
+            # heater_temp = self.kf(time)
+            return kappa*(heater_temp + toffset - body_temp) + \
+                   kappa0*(outside_temp - body_temp)
+        def _jac(time, body_temp, heater_temp, kappa, kappa0, toffset):
+            return -kappa - kappa0
+        bounds = (array([self.uf(t0)*0.9, 0,    0,   -ninf]), 
+                  array([self.uf(t0)*1.1, ninf, ninf, ninf]),
+                  )
+        def rhs(t, x, *params):
+            # print("rhs call for at", t, "for", x, "with", *params)
+            return _rhs(t, x, self.kf(t), *params)
+        def jac(t, x, *params):
+            return _jac(t, x, self.kf(t), *params)
+        # print(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
+        self.integrator = Integrator(rhs, jac, self.times, unknown_fn(t0))
+        guess = self.generate_guess()
+        self.params, _ = curve_fit(self.integrator,
+                                   unknown_fn.table.keys, unknown_fn.table.vals,
+                                   guess,
+                                   bounds=bounds,
+                                   )
+        self.params = tuple(self.params)
+        return self
+
+    def generate_guess(self) -> tuple:
+        if self.kf is not None and self.uf is not None and self.times is not None:
+            k0 = 0
+            toffset = 0
+            ks: list[float] = []
+            for i in range(min(10, len(self.uf.table.keys)-1)):
+                # body temperatures
+                bt_i00 = self.uf.table.vals[i]
+                bt_i01 = self.uf.table.vals[i+1]
+                bt_i05 = 0.5 * (bt_i00 + bt_i01)
+                # heater temperatures
+                ht_i00 = self.kf(bt_i00)
+                ht_i01 = self.kf(bt_i01)
+                ht_i05 = 0.5 * (ht_i00 + ht_i01)
+                dt = self.uf.table.keys[i+1] - self.uf.table.keys[i]
+                ks.append((bt_i01 - bt_i00) / (dt * (ht_i05 - bt_i05)))
+            k = reduce(lambda l, r: l + r, ks, 0.0) / len(ks)
+            return (self.uf(self.times[0]), k, k0, toffset)
+        else:
+            raise ValueError("TempOffsetPredictor: not set to prepare to emit")
+
+    def prepare_to_emit(self, *params) -> tuple[ndarray, ndarray]:
+        if self.times is not None and self.integrator is not None:
+            ts: list[float] = []
+            vals: list[ndarray] = []
+            # print(f"preparing to emit for times {self.times}")
+            for t in self.times:
+                ts.append(t)
+                vals.append(self.integrator(t, *params))
+            return (array(ts), array(vals))
+        else:
+            raise ValueError("TempOffsetPredictor: not set to prepare to emit")
+
+    def emit_all(self):
+        ts, vals = self.prepare_to_emit(*self.params)
+        for i in range(len(ts)):
+            v = vals[i]
+            try:
+                v[0]
+            except IndexError:
+                v = [v]
+            # print(f"printing {ts[i]} and {vals[i]}")
+            print(ts[i], *tuple(v))
+
+
+class TwoSideIsolated(IPredictor):
+    """ heater <-> inner <-> body <-> outer
+                   outer            inner,out """
+    def __init__(self, known_fn: PseudoFunction = None,
+                       unknown_fn: PseudoFunction = None,
+                       successor = None):
+        self.mode = "2isol"
+        self.successor = successor
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = None
+        self.integrator = None
+        self.params = None
+        self.is_set = False
+        if (self.kf is not None and self.uf is not None):
+            self.set(known_fn, unknown_fn)
+
+    def set(self, known_fn, unknown_fn):
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = known_fn.table.submerged_keys(unknown_fn.table)
+        t0 = self.times[0]
+        def _rhs(time, ts, heater_temp, k01, k02, k1, k2, k12):
+            """ body_temp = ts[0]
+                inner_temp = ts[1]
+                outer_temp = ts[2] """
+            # heater_temp = self.kf(time)
+            return array((k01*(ts[1] - ts[0])       + k02*(ts[2] - ts[0]),
+                          k1*(heater_temp - ts[1])  + k01*(ts[0] - ts[1]) + k12*(ts[2] - ts[1]),
+                          k2*(outside_temp - ts[2]) + k02*(ts[0] - ts[2]) + k12*(ts[1] - ts[2]),
+                          ))
+        def _jac(time, ts, heater_temp, k01, k02, k1, k2, k12):
+            return array([[-k01 - k02, k01,            k02],
+                          [k01,       -k01 - k1 - k12, k12],
+                          [k02,        k12,           -k02 - k2 - k12]
+                          ])
+        bounds = (array([self.uf(t0)*0.9, -ninf, -ninf, 0,    0,    0,    0,    0]), 
+                  array([self.uf(t0)*1.1,  ninf,  ninf, ninf, ninf, ninf, ninf, ninf]),
+                  )
+        def rhs(t, x, *params):
+            # print("rhs call for at", t, "for", x, "with", *params)
+            return _rhs(t, x, self.kf(t), *params)
+        def jac(t, x, *params):
+            return _jac(t, x, self.kf(t), *params)
+        # print(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
+        init_t0 = self.uf(t0)
+        init_t1 = 0.5*(init_t0 + self.kf(t0))
+        init_t2 = 0.5*(init_t0 + outside_temp)
+        self.integrator = TwoSideIsolated.IntegrAdapter(rhs, jac, self.times,
+                                                        array([init_t0, init_t1, init_t2,]),
+                                                        )
+        guess = self.generate_guess()
+        self.params, _ = curve_fit(self.integrator,
+                                   unknown_fn.table.keys, unknown_fn.table.vals,
+                                   guess,
+                                   bounds=bounds,
+                                   )
+        self.params = tuple(self.params)
+        return self
+
+    def generate_guess(self) -> tuple:
+        if self.kf is not None and self.uf is not None and self.times is not None:
+            k02 = 0
+            k2 = 0
+            k12 = 0
+            toffset = 0
+            ks: list[float] = []
+            for i in range(min(10, len(self.uf.table.keys)-1)):
+                # body temperatures
+                bt_i00 = self.uf.table.vals[i]
+                bt_i01 = self.uf.table.vals[i+1]
+                bt_i05 = 0.5 * (bt_i00 + bt_i01)
+                # heater temperatures
+                ht_i00 = self.kf(bt_i00)
+                ht_i01 = self.kf(bt_i01)
+                ht_i05 = 0.5 * (ht_i00 + ht_i01)
+                dt = self.uf.table.keys[i+1] - self.uf.table.keys[i]
+                ks.append((bt_i01 - bt_i00) / (dt * (ht_i05 - bt_i05)))
+            k = reduce(lambda l, r: l + r, ks, 0.0) / len(ks)
+            k01 = k/2
+            k1 = k/2
+            init_t0 = self.uf(self.times[0])
+            init_t1 = 0.5*(init_t0 + self.uf(self.times[0]))
+            init_t2 = 0.5*(init_t0 + outside_temp)
+            return (init_t0, init_t1, init_t2, k01, k02, k1, k2, k12)
+        else:
+            raise ValueError("TwoSideIsolated: not set to prepare to emit")
+
+    def prepare_to_emit(self, *params) -> tuple[ndarray, ndarray]:
+        if self.times is not None and self.integrator is not None:
+            ts: list[float] = []
+            vals: list[ndarray] = []
+            # print(f"preparing to emit for times {self.times}")
+            for t in self.times:
+                ts.append(t)
+                vals.append(self.integrator(t, *params))
+            return (array(ts), array(vals))
+        else:
+            raise ValueError("TwoSideIsolated: not set to prepare to emit")
+
+    def emit_all(self):
+        ts, vals = self.prepare_to_emit(*self.params)
+        for i in range(len(ts)):
+            v = vals[i]
+            try:
+                v[0]
+            except IndexError:
+                v = [v]
+            # print(f"printing {ts[i]} and {vals[i]}")
+            print(ts[i], *tuple(v))
+
+    class IntegrAdapter(Integrator):
+        def set_params(self, init_t0, init_t1, init_t2, k01, k02, k1, k2, k12):
+            ic = array([init_t0, init_t1, init_t2])
+            params = (k01, k02, k1, k2, k12)
+            if (self.ic != ic).any() or self.params != params:
+                self.ic = ic
+                self.params = params
+                self.integrate()
+
+        def __call__(self, arg, init_t0, init_t1, init_t2, *params):
+            self.set_params(init_t0, init_t1, init_t2, *params)
+            # print(f"IntegrAdapter: call({arg}, {(init_t0, init_t1, init_t2)}, {params}) -> {self.pf(arg)} -> {self.pf(arg)[0]}", file=stderr)
+            try:
+                return self.pf(arg)[:, 0]
+            except IndexError:
+                return self.pf(arg)[0]
+                pass
+
+
+class Predictors:
+    @classmethod
+    def get_predictor(cls, kf, uf, mode):
+        tp = TempPredictor()
+        top = TempOffsetPredictor(successor=tp)
+        _2isol = TwoSideIsolated(successor=top)
+        chain = _2isol
+        # chain = tp.connect(top.connect)
+        # if chain.find(mode) is not None:
+        #     print(f"found {mode} predictor", file=stderr)
+        return chain.find(mode).set(kf, uf)
 
 
 if __name__ == "__main__":
