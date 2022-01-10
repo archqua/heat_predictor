@@ -2,9 +2,10 @@
 
 import argparse
 from sys import stdin, stderr
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, basinhopping
 from scipy.integrate import ode
 from scipy.interpolate import interp1d
+import numpy as np
 from numpy import inf as ninf
 from numpy import ndarray, array
 from functools import reduce
@@ -16,7 +17,7 @@ resp_kw = "unknown"
 val_delim = ','
 outside_temp = 20 # Celcius
 
-valid_modes = {"temp", "temp_offset", "2isol"}
+valid_modes = {"temp", "temp_offset", "2isol", "2isol_offset", "stiff_offset", "stiff_square_offset"}
 
 
 def main():
@@ -54,7 +55,7 @@ def get_mode(args):
         exit(1)
     except KeyboardInterrupt:
         print("\nexiting...", file=stderr)
-        exit(0)
+        exit(1)
     return mode
 
 def get_known_signal():
@@ -95,7 +96,7 @@ def get_known_response(mode):
         for line in stdin:
             stripped = line.rstrip()
             try:
-                if mode in {"temp", "temp_offset", "2isol"}:
+                if mode in {"temp", "temp_offset", "2isol", "2isol_offset", "stiff_offset", "stiff_square_offset"}:
                     time, body_temp = map(float, stripped.split(val_delim))
                     known_response[time] = body_temp
                 elif "pow" == mode:
@@ -125,7 +126,8 @@ def emit_predicted_response(known_signal, known_response, mode):
         print(f"unknown mode {mode}", file=stderr)
         print("exiting...", file=stderr)
         exit(6)
-    print(predictor.params, file=stderr)
+    params = predictor.dictonize()
+    print(params, file=stderr)
     predictor.emit_all()
 
 
@@ -243,12 +245,15 @@ class IPredictor:
     def emit_all(self):
         raise NotImplementedError("AbstractPredictor: emit_all()")
 
+    def set(self, *args, **kwargs):
+        raise NotImplementedError(f"AbstractPredictor: set({args, kwargs})")
+
+    def dictonize(self):
+        raise NotImplementedError("AbstractPredictor: dictonize()")
+
     def connect(self, successor):
         self.successor = successor
         return self
-
-    def set(self, *args, **kwargs):
-        raise NotImplementedError(f"AbstractPredictor: set({args, kwargs})")
 
     def find(self, mode):
         if self.mode == mode:
@@ -256,12 +261,8 @@ class IPredictor:
         else:
             return self.successor
 
-
-class TempPredictor(IPredictor):
-    def __init__(self, known_fn: PseudoFunction = None,
-                       unknown_fn: PseudoFunction = None,
-                       successor = None):
-        self.mode = "temp"
+    def null_init(self, mode, known_fn, unknown_fn, successor):
+        self.mode = mode
         self.successor = successor
         self.kf = known_fn
         self.uf = unknown_fn
@@ -269,6 +270,13 @@ class TempPredictor(IPredictor):
         self.integrator = None
         self.params = None
         self.is_set = False
+
+
+class TempPredictor(IPredictor):
+    def __init__(self, known_fn: PseudoFunction = None,
+                       unknown_fn: PseudoFunction = None,
+                       successor = None):
+        self.null_init("temp", known_fn, unknown_fn, successor)
         if (self.kf is not None and self.uf is not None):
             self.set(known_fn, unknown_fn)
 
@@ -346,17 +354,17 @@ class TempPredictor(IPredictor):
             # print(f"printing {ts[i]} and {vals[i]}")
             print(ts[i], *tuple(v))
 
+    def dictonize(self):
+        res = dict()
+        res['t0'] = self.params[0]
+        res['k']  = self.params[1]
+        res['k0'] = self.params[2]
+        return res
+
 
 class TempOffsetPredictor(IPredictor):
     def __init__(self, known_fn: PseudoFunction = None, unknown_fn: PseudoFunction = None, successor = None):
-        self.mode = "temp_offset"
-        self.successor = successor
-        self.kf = known_fn
-        self.uf = unknown_fn
-        self.times = None
-        self.integrator = None
-        self.params = None
-        self.is_set = False
+        self.null_init("temp_offset", known_fn, unknown_fn, successor)
         if (self.kf is not None and self.uf is not None):
             self.set(known_fn, unknown_fn)
 
@@ -434,6 +442,14 @@ class TempOffsetPredictor(IPredictor):
             # print(f"printing {ts[i]} and {vals[i]}")
             print(ts[i], *tuple(v))
 
+    def dictonize(self):
+        res = dict()
+        res['t0']      = self.params[0]
+        res['k']       = self.params[1]
+        res['k0']      = self.params[2]
+        res['toffset'] = self.params[3]
+        return res
+
 
 class TwoSideIsolated(IPredictor):
     """ heater <-> inner <-> body <-> outer
@@ -441,14 +457,7 @@ class TwoSideIsolated(IPredictor):
     def __init__(self, known_fn: PseudoFunction = None,
                        unknown_fn: PseudoFunction = None,
                        successor = None):
-        self.mode = "2isol"
-        self.successor = successor
-        self.kf = known_fn
-        self.uf = unknown_fn
-        self.times = None
-        self.integrator = None
-        self.params = None
-        self.is_set = False
+        self.null_init("2isol", known_fn, unknown_fn, successor)
         if (self.kf is not None and self.uf is not None):
             self.set(known_fn, unknown_fn)
 
@@ -471,8 +480,8 @@ class TwoSideIsolated(IPredictor):
                           [k01,       -k01 - k1 - k12, k12],
                           [k02,        k12,           -k02 - k2 - k12]
                           ])
-        bounds = (array([self.uf(t0)*0.9, -ninf, -ninf, 0,    0,    0,    0,    0]), 
-                  array([self.uf(t0)*1.1,  ninf,  ninf, ninf, ninf, ninf, ninf, ninf]),
+        bounds = (array([self.uf(t0)*0.9, self.uf(t0)*0.9, outside_temp,    0,    0,    0,    0,    0]), 
+                  array([self.uf(t0)*1.1, self.kf(t0)*1.1, self.uf(t0)*1.1, ninf, ninf, ninf, ninf, ninf]),
                   )
         def rhs(t, x, *params):
             # print("rhs call for at", t, "for", x, "with", *params)
@@ -563,6 +572,358 @@ class TwoSideIsolated(IPredictor):
             except IndexError:
                 return self.pf(arg)[0]
                 pass
+        
+    def dictonize(self):
+        res = dict()
+        for k, v in zip(['t0', 't1', 't2', 'k01', 'k02', 'k1', 'k2', 'k12'], self.params):
+            res[k] = v
+        return res
+
+
+class TwoSideIsolatedOffset(IPredictor):
+    """ heater <-> inner <-> body <-> outer
+                   outer            inner,out """
+    def __init__(self, known_fn: PseudoFunction = None,
+                       unknown_fn: PseudoFunction = None,
+                       successor = None):
+        self.null_init("2isol_offset", known_fn, unknown_fn, successor)
+        if (self.kf is not None and self.uf is not None):
+            self.set(known_fn, unknown_fn)
+
+    def set(self, known_fn, unknown_fn):
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = known_fn.table.submerged_keys(unknown_fn.table)
+        t0 = self.times[0]
+        def _rhs(time, ts, heater_temp, k01, k02, k1, k2, k12, toffset):
+            """ body_temp  = ts[0]
+                inner_temp = ts[1]
+                outer_temp = ts[2] """
+            # heater_temp = self.kf(time)
+            return array((k01*(ts[1] - ts[0])       + k02*(ts[2] - ts[0]),
+                          k1*(heater_temp + toffset - ts[1])  + k01*(ts[0] - ts[1]) + k12*(ts[2] - ts[1]),
+                          k2*(outside_temp - ts[2]) + k02*(ts[0] - ts[2]) + k12*(ts[1] - ts[2]),
+                          ))
+        def _jac(time, ts, heater_temp, k01, k02, k1, k2, k12, toffset):
+            return array([[-k01 - k02, k01,            k02],
+                          [k01,       -k01 - k1 - k12, k12],
+                          [k02,        k12,           -k02 - k2 - k12]
+                          ])
+        bounds = (array([self.uf(t0)*0.9, self.uf(t0)*0.9, outside_temp,    0,    0,    0,    0,    0,   -ninf]), 
+                  array([self.uf(t0)*1.1, self.kf(t0)*1.1, self.uf(t0)*1.1, ninf, ninf, ninf, ninf, ninf, ninf]),
+                  )
+        def rhs(t, x, *params):
+            # print("rhs call for at", t, "for", x, "with", *params)
+            return _rhs(t, x, self.kf(t), *params)
+        def jac(t, x, *params):
+            return _jac(t, x, self.kf(t), *params)
+        # print(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
+        init_t0 = self.uf(t0)
+        init_t1 = 0.5*(init_t0 + self.kf(t0))
+        init_t2 = 0.5*(init_t0 + outside_temp)
+        self.integrator = TwoSideIsolatedOffset.IntegrAdapter(
+                                                    rhs, jac, self.times,
+                                                    array([init_t0, init_t1, init_t2,]),
+                                                    )
+        guess = self.generate_guess()
+        self.params, pcov = curve_fit(self.integrator,
+                                   unknown_fn.table.keys, unknown_fn.table.vals,
+                                   guess,
+                                   bounds=bounds,
+                                   # method='dogbox',
+                                   # jac='3-step'
+                                   )
+        self.params = tuple(self.params)
+        print(f"sigma: {np.sqrt(np.diag(pcov))}", file=stderr)
+        return self
+
+    def generate_guess(self) -> tuple:
+        if self.kf is not None and self.uf is not None and self.times is not None:
+            k02 = 0
+            k2 = 0
+            k12 = 0
+            toffset = 0
+            ks: list[float] = []
+            for i in range(min(10, len(self.uf.table.keys)-1)):
+                # body temperatures
+                bt_i00 = self.uf.table.vals[i]
+                bt_i01 = self.uf.table.vals[i+1]
+                bt_i05 = 0.5 * (bt_i00 + bt_i01)
+                # heater temperatures
+                ht_i00 = self.kf(bt_i00)
+                ht_i01 = self.kf(bt_i01)
+                ht_i05 = 0.5 * (ht_i00 + ht_i01)
+                dt = self.uf.table.keys[i+1] - self.uf.table.keys[i]
+                ks.append((bt_i01 - bt_i00) / (dt * (ht_i05 - bt_i05)))
+            k = reduce(lambda l, r: l + r, ks, 0.0) / len(ks)
+            k01 = k/2
+            k1 = k/2
+            init_t0 = self.uf(self.times[0])
+            init_t1 = 0.5*(init_t0 + self.uf(self.times[0]))
+            init_t2 = 0.5*(init_t0 + outside_temp)
+            return (init_t0, init_t1, init_t2, k01, k02, k1, k2, k12, toffset)
+        else:
+            raise ValueError("TwoSideIsolated: not set to prepare to emit")
+
+    def prepare_to_emit(self, *params) -> tuple[ndarray, ndarray]:
+        if self.times is not None and self.integrator is not None:
+            ts: list[float] = []
+            vals: list[ndarray] = []
+            # print(f"preparing to emit for times {self.times}")
+            for t in self.times:
+                ts.append(t)
+                vals.append(self.integrator(t, *params))
+            return (array(ts), array(vals))
+        else:
+            raise ValueError("TwoSideIsolated: not set to prepare to emit")
+
+    def emit_all(self):
+        ts, vals = self.prepare_to_emit(*self.params)
+        for i in range(len(ts)):
+            v = vals[i]
+            try:
+                v[0]
+            except IndexError:
+                v = [v]
+            # print(f"printing {ts[i]} and {vals[i]}")
+            print(ts[i], *tuple(v))
+
+    class IntegrAdapter(Integrator):
+        def set_params(self, init_t0, init_t1, init_t2, k01, k02, k1, k2, k12, toffset):
+            ic = array([init_t0, init_t1, init_t2])
+            params = (k01, k02, k1, k2, k12, toffset)
+            if (self.ic != ic).any() or self.params != params:
+                self.ic = ic
+                self.params = params
+                self.integrate()
+
+        def __call__(self, arg, init_t0, init_t1, init_t2, *params):
+            self.set_params(init_t0, init_t1, init_t2, *params)
+            # print(f"IntegrAdapter: call({arg}, {(init_t0, init_t1, init_t2)}, {params}) -> {self.pf(arg)} -> {self.pf(arg)[0]}", file=stderr)
+            try:
+                return self.pf(arg)[:, 0]
+            except IndexError:
+                return self.pf(arg)[0]
+                pass
+
+    def dictonize(self):
+        res = dict()
+        for k, v in zip(['t0', 't1', 't2', 'k01', 'k02', 'k1', 'k2', 'k12', 'toffset'], self.params):
+            res[k] = v
+        return res
+
+
+class StiffOffset(IPredictor):
+    def __init__(self, known_fn: PseudoFunction = None,
+                       unknown_fn: PseudoFunction = None,
+                       successor = None):
+        self.null_init("stiff_offset", known_fn, unknown_fn, successor)
+        if (self.kf is not None and self.uf is not None):
+            self.set(known_fn, unknown_fn)
+
+    def set(self, known_fn, unknown_fn):
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = known_fn.table.submerged_keys(unknown_fn.table)
+        t0 = self.times[0]
+        def _rhs(time, ts, heater_temp, alpha, k_f, k_s, toffset):
+            """ fast_temp = ts[0]
+                slow_temp = ts[1]
+                """
+            # heater_temp = self.kf(time)
+            return array((k_f*(heater_temp + toffset - ts[0]),
+                          k_s*(heater_temp + toffset - ts[1]),
+                          ))
+        def _jac(time, ts, heater_temp, alpha, k_f, k_s, toffset):
+            return array([[-k_f, 0  ],
+                          [ 0,  -k_s],
+                          ])
+        ############## alpha,   fast_temp,     slow_temp,    k_f,  k_s,  offset
+        bounds = (array([0, self.uf(t0)*0.8, self.uf(t0)*0.8, 0,    0,   -ninf]), 
+                  array([1, self.uf(t0)*1.2, self.uf(t0)*1.2, ninf, ninf, ninf]),
+                  )
+        def rhs(t, x, *params):
+            # print("rhs call for at", t, "for", x, "with", *params)
+            return _rhs(t, x, self.kf(t), *params)
+        def jac(t, x, *params):
+            return _jac(t, x, self.kf(t), *params)
+        # print(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
+        init_tf = self.uf(t0)
+        init_ts = self.uf(t0)
+        self.integrator = StiffOffset.IntegrAdapter(
+                                                    rhs, jac, self.times,
+                                                    array([init_tf, init_ts,]),
+                                                    )
+        guess = self.generate_guess()
+        self.params, pcov = curve_fit(self.integrator,
+                                   unknown_fn.table.keys, unknown_fn.table.vals,
+                                   guess,
+                                   bounds=bounds,
+                                   # method='dogbox',
+                                   # jac='3-step'
+                                   )
+        self.params = tuple(self.params)
+        print(f"sigma: {np.sqrt(np.diag(pcov))}", file=stderr)
+        return self
+
+    class IntegrAdapter(Integrator):
+        def set_params(self, alpha, init_tf, init_ts, k_f, k_s, toffset):
+            ic = array([init_tf, init_ts])
+            params = (alpha, k_f, k_s, toffset)
+            if (self.ic != ic).any() or self.params != params:
+                self.ic = ic
+                self.params = params
+                self.integrate()
+
+        def __call__(self, arg, *params):
+            self.set_params(*params)
+            alpha = params[0]
+            try:
+                return alpha*self.pf(arg)[:, 0] + (1-alpha)*self.pf(arg)[:, 1]
+            except IndexError:
+                return alpha*self.pf(arg)[0] + (1-alpha)*self.pf(arg)[1]
+                pass
+
+    def generate_guess(self) -> tuple:
+        if self.kf is not None and self.uf is not None and self.times is not None:
+            alpha = 0.85
+            toffset = 0
+            ks: list[float] = []
+            for i in range(min(10, len(self.uf.table.keys)-1)):
+                # body temperatures
+                bt_i00 = self.uf.table.vals[i]
+                bt_i01 = self.uf.table.vals[i+1]
+                bt_i05 = 0.5 * (bt_i00 + bt_i01)
+                # heater temperatures
+                ht_i00 = self.kf(bt_i00)
+                ht_i01 = self.kf(bt_i01)
+                ht_i05 = 0.5 * (ht_i00 + ht_i01)
+                dt = self.uf.table.keys[i+1] - self.uf.table.keys[i]
+                ks.append((bt_i01 - bt_i00) / (dt * (ht_i05 - bt_i05)))
+            k_f = reduce(lambda l, r: l + r, ks, 0.0) / len(ks)
+            k_s = 0.01*k_f
+            k_f *= 0.8
+            init_tf = self.uf(self.times[0])
+            init_ts = init_tf
+            return (alpha, init_tf, init_ts, k_f, k_s, toffset)
+        else:
+            raise ValueError("TwoSideIsolated: not set to prepare to emit")
+
+    def prepare_to_emit(self, *params) -> tuple[ndarray, ndarray]:
+        if self.times is not None and self.integrator is not None:
+            ts: list[float] = []
+            vals: list[ndarray] = []
+            # print(f"preparing to emit for times {self.times}")
+            for t in self.times:
+                ts.append(t)
+                vals.append(self.integrator(t, *params))
+            return (array(ts), array(vals))
+        else:
+            raise ValueError("StiffOfset: not set to prepare to emit")
+
+    def emit_all(self):
+        ts, vals = self.prepare_to_emit(*self.params)
+        for i in range(len(ts)):
+            v = vals[i]
+            try:
+                v[0]
+            except IndexError:
+                v = [v]
+            # print(f"printing {ts[i]} and {vals[i]}")
+            print(ts[i], *tuple(v))
+
+    def dictonize(self):
+        res = dict()
+        for k, v in zip(['alpha', 't0_f', 't0_s', 'k_f', 'k_s', 'toffset'], self.params):
+            res[k] = v
+        return res
+
+
+class StiffSquareOffset(StiffOffset):
+    def __init__(self, known_fn: PseudoFunction = None,
+                       unknown_fn: PseudoFunction = None,
+                       successor = None):
+        self.null_init("stiff_square_offset", known_fn, unknown_fn, successor)
+        if (self.kf is not None and self.uf is not None):
+            self.set(known_fn, unknown_fn)
+
+    class IntegrAdapter(Integrator):
+        def set_params(self, alpha, init_tf, init_ts, k_f, k_s, toffset):
+            ic = array([init_tf, init_ts])
+            params = (alpha, k_f, k_s, toffset)
+            if (self.ic != ic).any() or self.params != params:
+                self.ic = ic
+                self.params = params
+                self.integrate()
+
+        def __call__(self, arg, *params):
+            self.set_params(*params)
+            alpha = params[0]
+            try:
+                return np.sqrt(alpha * (self.pf(arg)[:, 0])**2 +\
+                               (1-alpha) * (self.pf(arg)[:, 1])**2
+                            )
+            except IndexError:
+                return np.sqrt(alpha * (self.pf(arg)[0])**2 + \
+                               (1-alpha) * (self.pf(arg)[1])**2
+                            )
+                pass
+
+
+class StiffBasinOffset(StiffOffset):
+    def __init__(self, known_fn: PseudoFunction = None,
+                       unknown_fn: PseudoFunction = None,
+                       successor = None):
+        self.null_init("stiff_basin_offset", known_fn, unknown_fn, successor)
+        if (self.kf is not None and self.uf is not None):
+            self.set(known_fn, unknown_fn)
+    def set(self, known_fn, unknown_fn):
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = known_fn.table.submerged_keys(unknown_fn.table)
+        t0 = self.times[0]
+        def _rhs(time, ts, heater_temp, alpha, k_f, k_s, toffset):
+            """ fast_temp = ts[0]
+                slow_temp = ts[1]
+                """
+            # heater_temp = self.kf(time)
+            return array((k_f*(heater_temp + toffset - ts[0]),
+                          k_s*(heater_temp + toffset - ts[1]),
+                          ))
+        def _jac(time, ts, heater_temp, alpha, k_f, k_s, toffset):
+            return array([[-k_f, 0  ],
+                          [ 0,  -k_s],
+                          ])
+        ############## alpha,   fast_temp,     slow_temp,    k_f,  k_s,  offset
+        bounds = (array([0, self.uf(t0)*0.8, self.uf(t0)*0.8, 0,    0,   -ninf]), 
+                  array([1, self.uf(t0)*1.2, self.uf(t0)*1.2, ninf, ninf, ninf]),
+                  )
+        def rhs(t, x, *params):
+            # print("rhs call for at", t, "for", x, "with", *params)
+            return _rhs(t, x, self.kf(t), *params)
+        def jac(t, x, *params):
+            return _jac(t, x, self.kf(t), *params)
+        # print(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
+        init_tf = self.uf(t0)
+        init_ts = self.uf(t0)
+        self.integrator = StiffOffset.IntegrAdapter(
+                                                    rhs, jac, self.times,
+                                                    array([init_tf, init_ts,]),
+                                                    )
+        guess = self.generate_guess()
+        def of(params):
+            return np.var(self.kf(self.times) - self.uf(self.times), ddof=0)
+        ores = basinhopping(of, x0=guess)
+        self.params, pcov = curve_fit(self.integrator,
+                                   unknown_fn.table.keys, unknown_fn.table.vals,
+                                   guess,
+                                   bounds=bounds,
+                                   # method='dogbox',
+                                   # jac='3-step'
+                                   )
+        self.params = tuple(self.params)
+        print(f"sigma: {np.sqrt(np.diag(pcov))}", file=stderr)
+        return self
 
 
 class Predictors:
@@ -571,11 +932,16 @@ class Predictors:
         tp = TempPredictor()
         top = TempOffsetPredictor(successor=tp)
         _2isol = TwoSideIsolated(successor=top)
-        chain = _2isol
+        _2isol_offset = TwoSideIsolatedOffset(successor=_2isol)
+        stiff_offset = StiffOffset(successor=_2isol_offset)
+        stiff_square_offset = StiffSquareOffset(successor=stiff_offset)
+        chain = stiff_square_offset
         # chain = tp.connect(top.connect)
-        # if chain.find(mode) is not None:
-        #     print(f"found {mode} predictor", file=stderr)
-        return chain.find(mode).set(kf, uf)
+        predictor = chain.find(mode)
+        # if predictor is not None:
+        #     print(f"found {mode} predictor to be {predictor.mode}", file=stderr)
+        # return chain.find(mode).set(kf, uf)
+        return predictor.set(kf, uf)
 
 
 if __name__ == "__main__":
