@@ -1,0 +1,527 @@
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4524653712151D+06   R2 =  0.2917287283117D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4524653712151D+06   R2 =  0.2917287283117D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4524654778264D+06   R2 =  0.2343476889126D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4524691574432D+06   R2 =  0.4730900884446D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4524647464798D+06   R2 =  0.4126971400006D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4271078326407D+06   R2 =  0.2101356695478D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4271078326407D+06   R2 =  0.2101356695478D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4271063302860D+06   R2 =  0.2241268521206D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4271084125821D+06   R2 =  0.2640190976580D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4271065068634D+06   R2 =  0.2671922928621D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4271069778172D+06   R2 =  0.1364615948185D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4182496678906D+06   R2 =  0.2617778810000D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4182496678906D+06   R2 =  0.2617778810000D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4182506084211D+06   R2 =  0.1630374288114D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4182494090897D+06   R2 =  0.1740946769221D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4182479934041D+06   R2 =  0.2267182939461D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4182520827245D+06   R2 =  0.2075481848874D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4182502297449D+06   R2 =  0.1943127506698D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4144522703569D+06   R2 =  0.3392225892479D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4144522703569D+06   R2 =  0.3392225892479D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4144585691995D+06   R2 =  0.3150137654879D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4144599605455D+06   R2 =  0.2152610426040D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4144575144815D+06   R2 =  0.1999179770672D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4144587163827D+06   R2 =  0.3064416943513D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4126935266391D+06   R2 =  0.3006823124530D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4126935266391D+06   R2 =  0.3006823124530D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4126959450779D+06   R2 =  0.1436950697990D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4126963054862D+06   R2 =  0.1820470732685D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4118454948532D+06   R2 =  0.1432870568392D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4118454948532D+06   R2 =  0.1432870568392D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4118449010583D+06   R2 =  0.1604764531517D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4118431055004D+06   R2 =  0.2259950925207D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4118432833912D+06   R2 =  0.1255887945885D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4118460285544D+06   R2 =  0.1182068501930D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4116365944234D+06   R2 =  0.1712280647059D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4116365944234D+06   R2 =  0.1712280647059D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4116340164428D+06   R2 =  0.2252756067380D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4116345900025D+06   R2 =  0.1477315284925D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4116355864940D+06   R2 =  0.1185789872757D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4116293711510D+06   R2 =  0.2826008820597D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4116339004905D+06   R2 =  0.1449527896582D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4115834720507D+06   R2 =  0.8228520329772D-05
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4115834720507D+06   R2 =  0.8228520329772D-05
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4115803573977D+06   R2 =  0.3224088956836D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4115830114847D+06   R2 =  0.1502228566463D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4115841395610D+06   R2 =  0.1731888320440D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.4115812153646D+06   R2 =  0.1932837985623D-04
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741701815D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741701815D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741687019D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741687019D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741693527D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741693527D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1429741697671D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.2021960109457D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.2021960109457D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.3032016082174D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.3032016082174D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.4462515711895D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.4462515711895D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.6606713935437D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.6606713935437D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.9763517482573D-13
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.9763517482573D-13
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1442449628377D-11
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.1442449628377D-11
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.2136844830396D-11
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.2136844830396D-11
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.3156649827287D-11
+ DVODE--  Warning..internal T (=R1) and H (=R2) are
+       such that in the machine, T + H = T on the next step  
+       (H = step size). solver will continue anyway
+      In above,  R1 =  0.3390000000000D+06   R2 =  0.3156649827287D-11
+ DVODE--  Above warning has been issued I1 times.  
+       it will not be issued again for this problem
+      In above message,  I1 =         2
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1090967758574D+07   R2 =  0.5696191472427D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1090967758574D+07   R2 =  0.5696191472427D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1090967758574D+07   R2 =  0.5696191472427D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1090967758574D+07   R2 =  0.5696191472427D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1090967758574D+07   R2 =  0.5696191472427D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1090967758574D+07   R2 =  0.5696191472427D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1090967758574D+07   R2 =  0.5696191472427D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1090967758574D+07   R2 =  0.5696191472427D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9699620103662D+06   R2 =  0.4320013292209D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1090967758574D+07   R2 =  0.5696191472427D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.7669944403513D+06   R2 =  0.1160148266023D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.7669944403513D+06   R2 =  0.1160148266023D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1075995651878D+07   R2 =  0.5381226820311D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.8409851270808D+06   R2 =  0.3434049449600D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1122999463187D+07   R2 =  0.5458599925756D+00
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1055000082008D+07   R2 =  0.4931697139882D+00
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.8369977935591D+06   R2 =  0.6563872700785D+00
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9719891335032D+06   R2 =  0.4625436784514D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1037949913321D+07   R2 =  0.5163354230748D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.1037949913321D+07   R2 =  0.5163354230748D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.6919945100529D+06   R2 =  0.1700656036797D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.6029940927654D+06   R2 =  0.1124722667048D+01
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.8048271513379D+06   R2 =  0.4129636643433D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.8048332591622D+06   R2 =  0.4275361520156D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.8048331374767D+06   R2 =  0.8865436290987D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.8048335907548D+06   R2 =  0.9594648793768D-04
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     
+       or with abs(H) = HMIN   
+      In above,  R1 =  0.8048301400116D+06   R2 =  0.1252487899345D-03
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9959683904306D+06   R2 =  0.4349407996954D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.8979902285585D+06   R2 =  0.2510557904987D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.8979902285585D+06   R2 =  0.2510557904987D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.9219997029827D+06   R2 =  0.6565232445168D+00
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.8979902285585D+06   R2 =  0.2510557904987D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.8979902285585D+06   R2 =  0.2510557904987D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.8979902285585D+06   R2 =  0.2510557904987D+01
+ DVODE--  At T(=R1) and step size H(=R2), the error
+       test failed repeatedly or with abs(H) = HMIN
+      In above,  R1 =  0.8979902285585D+06   R2 =  0.2510557904987D+01
+ DVODE--  At T (=R1) and step size H (=R2), the    
+       corrector convergence failed repeatedly     

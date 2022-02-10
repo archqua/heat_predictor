@@ -1,0 +1,102 @@
+Penalty
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = known_fn.table.submerged_keys(unknown_fn.table)
+        t0 = self.times[0]
+        def _rhs(time, ts, heater_temp, alpha, k_f, k_s, toffset):
+            """ fast_temp = ts[0]
+                slow_temp = ts[1]
+                """
+            # heater_temp = self.kf(time)
+            return array((k_f*(heater_temp + toffset - ts[0]),
+                          k_s*(heater_temp + toffset - ts[1]),
+                          ))
+        def _jac(time, ts, heater_temp, alpha, k_f, k_s, toffset):
+            return array([[-k_f, 0  ],
+                          [ 0,  -k_s],
+                          ])
+        ############## alpha,   fast_temp,     slow_temp,    k_f,  k_s,  offset
+        bounds = (array([0, self.uf(t0)*0.8, self.uf(t0)*0.8, 0,    0,   -ninf]), 
+                  array([1, self.uf(t0)*1.2, self.uf(t0)*1.2, ninf, ninf, ninf]),
+                  )
+        def rhs(t, x, *params):
+            # notify("rhs call for at", t, "for", x, "with", *params)
+            return _rhs(t, x, self.kf(t), *params)
+        def jac(t, x, *params):
+            return _jac(t, x, self.kf(t), *params)
+        # notify(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
+        init_tf = self.uf(t0)
+        init_ts = self.uf(t0)
+        self.integrator = StiffOffset.IntegrAdapter(
+                                                    rhs, jac, self.times,
+                                                    array([init_tf, init_ts,]),
+                                                    )
+        guess = self.generate_guess()
+        # step 1: curve fit
+        self.params, pcov = curve_fit(self.integrator,
+                                   unknown_fn.table.keys, unknown_fn.table.vals,
+                                   guess,
+                                   bounds=bounds,
+                                   # method='dogbox',
+                                   # jac='3-step'
+                                   )
+        self.params = tuple(self.params)
+        # step 2: penalty for
+        def of(params):
+            mse = np.mean(abs(self.uf(self.times) - self.integrator(self.times, *tuple(params))))
+            return mse + StiffPenaltyOffset.penalty*params[-2]**2 # params[-2] == k_s
+        _bounds = tuple((x, y) for x, y in zip(bounds[0], bounds[1]))
+        notify(f"penalty before minimization of k_s: {of(self.params)}")
+        ores = so.minimize(of, x0=self.params, bounds=_bounds, jac='2-point')
+        self.params = tuple(ores.x)
+        notify(f"penalty after minimization of k_s: {of(self.params)}")
+        # notify(f"sigma: {np.sqrt(np.diag(pcov))}", file=stderr)
+        notify("StiffPenaltyOffset:", "success" if ores.success else "fail", file=stderr)
+        notify(f"StiffPenaltyOffset::message: {ores.message}")
+        return self
+
+No penalty
+        self.kf = known_fn
+        self.uf = unknown_fn
+        self.times = known_fn.table.submerged_keys(unknown_fn.table)
+        t0 = self.times[0]
+        def _rhs(time, ts, heater_temp, alpha, k_f, k_s, toffset):
+            """ fast_temp = ts[0]
+                slow_temp = ts[1]
+                """
+            # heater_temp = self.kf(time)
+            return array((k_f*(heater_temp + toffset - ts[0]),
+                          k_s*(heater_temp + toffset - ts[1]),
+                          ))
+        def _jac(time, ts, heater_temp, alpha, k_f, k_s, toffset):
+            return array([[-k_f, 0  ],
+                          [ 0,  -k_s],
+                          ])
+        ############## alpha,   fast_temp,     slow_temp,    k_f,  k_s,  offset
+        bounds = (array([0, self.uf(t0)*0.8, self.uf(t0)*0.8, 0,    0,   -ninf]), 
+                  array([1, self.uf(t0)*1.2, self.uf(t0)*1.2, ninf, ninf, ninf]),
+                  )
+        def rhs(t, x, *params):
+            # notify("rhs call for at", t, "for", x, "with", *params)
+            return _rhs(t, x, self.kf(t), *params)
+        def jac(t, x, *params):
+            return _jac(t, x, self.kf(t), *params)
+        # notify(f"integrator:\nknown\n{known_fn.table}\nunknown\n{unknown_fn.table}\ntimes\n{self.times}")
+        init_tf = self.uf(t0)
+        init_ts = self.uf(t0)
+        self.integrator = StiffOffset.IntegrAdapter(
+                                                    rhs, jac, self.times,
+                                                    array([init_tf, init_ts,]),
+                                                    )
+        guess = self.generate_guess()
+        self.params, pcov = curve_fit(self.integrator,
+                                   unknown_fn.table.keys, unknown_fn.table.vals,
+                                   guess,
+                                   bounds=bounds,
+                                   # method='dogbox',
+                                   # jac='3-step'
+                                   )
+        self.params = tuple(self.params)
+        notify(f"sigma: {np.sqrt(np.diag(pcov))}", file=stderr)
+        return self
+
